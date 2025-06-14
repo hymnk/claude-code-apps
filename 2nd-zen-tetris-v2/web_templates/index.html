@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎋 ZEN Tetris v2 - ブラウザ版</title>
+    <style>
+        :root {
+            /* Earth-tone color palette */
+            --warm-brown: #8B7355;
+            --tan: #D2B48C;
+            --dusty-purple: #6B5B73;
+            --sage-green: #9CAF88;
+            --mocha: #A0845C;
+            --olive-gray: #7D8471;
+            --honey-brown: #B8926A;
+            --bg-gradient: linear-gradient(135deg, #8B7355 0%, #6B5B73 50%, #7D8471 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .game-board-container {
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        #gameCanvas {
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            display: block;
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 200px;
+        }
+
+        .panel-section {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-section h3 {
+            margin-bottom: 10px;
+            color: var(--tan);
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            opacity: 0.8;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--tan);
+        }
+
+        #nextCanvas {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls {
+            text-align: center;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .controls strong {
+            color: var(--tan);
+        }
+
+        .status-bar {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            z-index: 1000;
+        }
+
+        .status-connected {
+            color: #4CAF50;
+        }
+
+        .status-disconnected {
+            color: #f44336;
+        }
+
+        .game-over-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            border-radius: 8px;
+            z-index: 100;
+        }
+
+        .game-over-content {
+            text-align: center;
+            color: #fff;
+        }
+
+        .game-over-content h2 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: var(--tan);
+        }
+
+        .game-over-content p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .restart-hint {
+            font-size: 1em;
+            opacity: 0.7;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .pause-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            z-index: 99;
+        }
+
+        .pause-content {
+            text-align: center;
+            color: #fff;
+        }
+
+        .pause-content h2 {
+            font-size: 2em;
+            color: var(--tan);
+            margin-bottom: 10px;
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title h1 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, var(--tan), var(--honey-brown));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+
+        .title p {
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .side-panel {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                min-width: auto;
+            }
+            
+            .panel-section {
+                flex: 1;
+                min-width: 150px;
+            }
+            
+            .title h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar">
+        <span id="connectionStatus" class="status-disconnected">接続中...</span>
+    </div>
+
+    <div class="title">
+        <h1>🎋 ZEN Tetris v2</h1>
+        <p>心を落ち着けるアースカラーテトリス</p>
+    </div>
+
+    <div class="game-container">
+        <div class="game-board-container">
+            <canvas id="gameCanvas" width="300" height="600"></canvas>
+            
+            <div class="game-over-overlay" id="gameOverOverlay">
+                <div class="game-over-content">
+                    <h2>🎋 ゲーム終了</h2>
+                    <p>お疲れさまでした</p>
+                    <div class="restart-hint">Rキーでリスタート</div>
+                </div>
+            </div>
+            
+            <div class="pause-overlay" id="pauseOverlay">
+                <div class="pause-content">
+                    <h2>⏸️ 一時停止</h2>
+                    <p>Pキーで再開</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <div class="panel-section">
+                <h3>📊 ステータス</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">スコア</div>
+                        <div class="stat-value" id="scoreValue">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">ライン</div>
+                        <div class="stat-value" id="linesValue">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">レベル</div>
+                        <div class="stat-value" id="levelValue">1</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">接続</div>
+                        <div class="stat-value" id="playersValue">1</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <h3>🔮 次のピース</h3>
+                <canvas id="nextCanvas" width="120" height="80"></canvas>
+            </div>
+
+            <div class="panel-section">
+                <h3>🎮 操作方法</h3>
+                <div class="controls">
+                    <strong>← →</strong> 左右移動<br>
+                    <strong>↓</strong> 高速落下<br>
+                    <strong>↑</strong> 回転<br>
+                    <strong>スペース</strong> 一気に落下<br>
+                    <strong>P</strong> ポーズ<br>
+                    <strong>R</strong> リスタート
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/tetris-client.js"></script>
+</body>
+</html>
