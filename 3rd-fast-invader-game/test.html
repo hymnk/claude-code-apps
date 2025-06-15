@@ -57,10 +57,18 @@
         <button onclick="simulateCollision()">Simulate Collision</button>
     </div>
     
-    <script src="js/game.js"></script>
-    <script src="js/player.js"></script>
-    <script src="js/invader.js"></script>
-    <script src="js/bullet.js"></script>
+    <script type="module">
+        import { Game } from './dist/game.js';
+        import { Player } from './dist/player.js';
+        import { Invader } from './dist/invader.js';
+        import { Bullet } from './dist/bullet.js';
+        
+        // Make classes available globally for test functions
+        window.Game = Game;
+        window.Player = Player;
+        window.Invader = Invader;
+        window.Bullet = Bullet;
+    </script>
     
     <script>
         let debugGame;
