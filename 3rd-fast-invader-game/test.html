@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Invader Game - Debug</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #000;
+            color: #00ff00;
+            margin: 20px;
+        }
+        #debugInfo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border: 1px solid #00ff00;
+            font-size: 12px;
+            max-width: 300px;
+        }
+        #gameCanvas {
+            border: 2px solid #00ff00;
+        }
+        .test-results {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #00ff00;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+    </style>
+</head>
+<body>
+    <h1>Fast Invader Game - Debug Mode</h1>
+    
+    <div id="debugInfo">
+        <h3>Debug Info</h3>
+        <div id="gameState">Game State: </div>
+        <div id="invaderCount">Invaders: </div>
+        <div id="bulletCount">Bullets: </div>
+        <div id="errorLog">Errors: None</div>
+    </div>
+    
+    <div class="test-results">
+        <h3>Unit Tests</h3>
+        <div id="testResults"></div>
+    </div>
+    
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    
+    <div>
+        <button onclick="runTests()">Run Tests</button>
+        <button onclick="startDebugGame()">Start Debug Game</button>
+        <button onclick="simulateCollision()">Simulate Collision</button>
+    </div>
+    
+    <script src="js/game.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/invader.js"></script>
+    <script src="js/bullet.js"></script>
+    
+    <script>
+        let debugGame;
+        let testResults = [];
+        
+        // Override console.error to catch errors
+        const originalError = console.error;
+        console.error = function(...args) {
+            document.getElementById('errorLog').innerHTML = 'Error: ' + args.join(' ');
+            originalError.apply(console, args);
+        };
+        
+        function runTests() {
+            testResults = [];
+            
+            // Test 1: Game initialization
+            try {
+                const canvas = document.getElementById('gameCanvas');
+                const game = new Game(canvas);
+                test('Game initialization', true, 'Game object created successfully');
+            } catch (e) {
+                test('Game initialization', false, e.message);
+            }
+            
+            // Test 2: Player creation
+            try {
+                const player = new Player(100, 100);
+                test('Player creation', player !== null, 'Player object created');
+            } catch (e) {
+                test('Player creation', false, e.message);
+            }
+            
+            // Test 3: Invader creation
+            try {
+                const invader = new Invader(50, 50, 1);
+                test('Invader creation', invader !== null, 'Invader object created');
+            } catch (e) {
+                test('Invader creation', false, e.message);
+            }
+            
+            // Test 4: Bullet creation
+            try {
+                const bullet = new Bullet(100, 100, -5, 'player');
+                test('Bullet creation', bullet !== null, 'Bullet object created');
+            } catch (e) {
+                test('Bullet creation', false, e.message);
+            }
+            
+            // Test 5: Collision detection
+            try {
+                const obj1 = { x: 10, y: 10, width: 20, height: 20 };
+                const obj2 = { x: 15, y: 15, width: 20, height: 20 };
+                const obj3 = { x: 50, y: 50, width: 20, height: 20 };
+                
+                const canvas = document.getElementById('gameCanvas');
+                const game = new Game(canvas);
+                
+                const collision1 = game.isColliding(obj1, obj2);
+                const collision2 = game.isColliding(obj1, obj3);
+                
+                test('Collision detection - overlap', collision1 === true, 'Overlapping objects detected');
+                test('Collision detection - no overlap', collision2 === false, 'Non-overlapping objects detected');
+            } catch (e) {
+                test('Collision detection', false, e.message);
+            }
+            
+            displayTestResults();
+        }
+        
+        function test(name, condition, message) {
+            testResults.push({
+                name: name,
+                passed: condition,
+                message: message
+            });
+        }
+        
+        function displayTestResults() {
+            const resultsDiv = document.getElementById('testResults');
+            let html = '';
+            
+            testResults.forEach(result => {
+                const className = result.passed ? 'pass' : 'fail';
+                const status = result.passed ? 'PASS' : 'FAIL';
+                html += `<div class="${className}">[${status}] ${result.name}: ${result.message}</div>`;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function startDebugGame() {
+            const canvas = document.getElementById('gameCanvas');
+            debugGame = new Game(canvas);
+            
+            // Override update method to add debug info
+            const originalUpdate = debugGame.update.bind(debugGame);
+            debugGame.update = function(deltaTime) {
+                try {
+                    originalUpdate(deltaTime);
+                    updateDebugInfo();
+                } catch (e) {
+                    console.error('Error in game update:', e);
+                    document.getElementById('errorLog').innerHTML = 'Update Error: ' + e.message;
+                }
+            };
+            
+            // Override checkCollisions to add logging
+            const originalCheckCollisions = debugGame.checkCollisions.bind(debugGame);
+            debugGame.checkCollisions = function() {
+                try {
+                    console.log('Checking collisions - Invaders:', this.invaders.length, 'Player bullets:', this.playerBullets.length);
+                    originalCheckCollisions();
+                } catch (e) {
+                    console.error('Error in collision detection:', e);
+                    document.getElementById('errorLog').innerHTML = 'Collision Error: ' + e.message;
+                }
+            };
+            
+            debugGame.startGame();
+        }
+        
+        function updateDebugInfo() {
+            if (debugGame) {
+                document.getElementById('gameState').innerHTML = 'Game State: ' + debugGame.gameState;
+                document.getElementById('invaderCount').innerHTML = 'Invaders: ' + debugGame.invaders.length;
+                document.getElementById('bulletCount').innerHTML = 'Player Bullets: ' + debugGame.playerBullets.length + ', Enemy Bullets: ' + debugGame.invaderBullets.length;
+            }
+        }
+        
+        function simulateCollision() {
+            if (debugGame && debugGame.invaders.length > 0 && debugGame.player) {
+                // Create a bullet at the first invader's position
+                const invader = debugGame.invaders[0];
+                const bullet = new Bullet(invader.x + invader.width / 2, invader.y + invader.height / 2, -1, 'player');
+                debugGame.playerBullets.push(bullet);
+                console.log('Simulated collision - bullet created at invader position');
+            }
+        }
+        
+        // Auto-run tests on load
+        window.onload = function() {
+            runTests();
+        };
+    </script>
+</body>
+</html>
