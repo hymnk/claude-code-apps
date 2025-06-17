@@ -1,0 +1,1 @@
+# Loto6 Predictor Package
