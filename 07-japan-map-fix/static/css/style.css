@@ -1,0 +1,229 @@
+/* 日本地図ブラウザ スタイルシート */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    color: #212529;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+header p {
+    font-size: 1.1rem;
+    opacity: 0.7;
+    color: #6c757d;
+}
+
+main {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.map-container {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#japan-map {
+    width: 100%;
+    height: 600px;
+    display: block;
+}
+
+.info-panel {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    height: fit-content;
+}
+
+.info-panel h2 {
+    color: #4a5568;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 10px;
+}
+
+#prefecture-info {
+    background: #f7fafc;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    min-height: 100px;
+}
+
+.legend {
+    margin-top: 25px;
+}
+
+.legend h3 {
+    color: #4a5568;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.color-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    margin-right: 10px;
+    border: 1px solid #ddd;
+}
+
+/* モノクロ地域別カラーパレット */
+.hokkaido { background-color: #212529; }
+.tohoku { background-color: #343a40; }
+.kanto { background-color: #495057; }
+.chubu { background-color: #6c757d; }
+.kinki { background-color: #adb5bd; }
+.chugoku { background-color: #ced4da; }
+.shikoku { background-color: #dee2e6; }
+.kyushu { background-color: #e9ecef; }
+.okinawa { background-color: #f8f9fa; }
+
+/* 地図の要素（パスと矩形の両方に対応） */
+.prefecture {
+    stroke: #ffffff;
+    stroke-width: 1.5;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.prefecture:hover {
+    stroke-width: 2.5;
+    stroke: #000000;
+    filter: brightness(0.8);
+}
+
+.prefecture.selected {
+    stroke: #000000;
+    stroke-width: 3;
+    filter: brightness(0.7);
+}
+
+/* モノクロ地域別スタイル */
+.prefecture.hokkaido { fill: #212529; }
+.prefecture.tohoku { fill: #343a40; }
+.prefecture.kanto { fill: #495057; }
+.prefecture.chubu { fill: #6c757d; }
+.prefecture.kinki { fill: #adb5bd; }
+.prefecture.chugoku { fill: #ced4da; }
+.prefecture.shikoku { fill: #dee2e6; }
+.prefecture.kyushu { fill: #e9ecef; }
+.prefecture.okinawa { fill: #f8f9fa; }
+
+/* 都道府県ラベル */
+.prefecture-label {
+    font-size: 10px;
+    font-weight: bold;
+    fill: #ffffff;
+    text-anchor: middle;
+    pointer-events: none;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+footer {
+    text-align: center;
+    color: #6c757d;
+    opacity: 0.8;
+    margin-top: 20px;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 1024px) {
+    main {
+        grid-template-columns: 1fr;
+    }
+    
+    .container {
+        padding: 15px;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    #japan-map {
+        height: 500px;
+    }
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .map-container,
+    .info-panel {
+        padding: 15px;
+    }
+    
+    #japan-map {
+        height: 400px;
+    }
+}
+
+/* アニメーション効果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.map-container,
+.info-panel {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* ツールチップスタイル */
+.tooltip {
+    position: absolute;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s;
+}

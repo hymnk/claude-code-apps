@@ -1,0 +1,1 @@
+# Test package for Japan map browser application
