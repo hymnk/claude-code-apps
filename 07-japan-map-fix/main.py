@@ -1,33 +1,39 @@
 #!/usr/bin/env python3
 """
-日本地図ブラウザアプリ - メイン起動スクリプト
+高品質日本地図ブラウザアプリ - メイン起動スクリプト（Matplotlib版）
 """
 
 import sys
 import os
+import threading
 
 # アプリケーションのディレクトリをPythonパスに追加
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app import app, open_browser
-import threading
-
 def main():
     """メイン関数"""
-    print("🗾 日本地図ブラウザアプリを起動します...")
-    print("=" * 50)
+    print("🗾 高品質日本地図ブラウザアプリ（Matplotlib版）")
+    print("=" * 60)
     print("📍 URL: http://localhost:5000")
     print("📱 ブラウザが自動で開きます")
+    print("🎨 JavaScript不使用の純Python地図表示")
     print("🛑 終了するには Ctrl+C を押してください")
-    print("=" * 50)
+    print("=" * 60)
     
     try:
+        from app_matplotlib import app, open_browser
+        
         # ブラウザを自動で開く
         threading.Thread(target=open_browser, daemon=True).start()
         
         # Flaskアプリを起動
         app.run(host='0.0.0.0', port=5000, debug=False)
         
+    except ImportError as e:
+        print(f"❌ アプリケーションの起動に失敗しました: {e}")
+        print("💡 app_matplotlib.py が存在し、必要なライブラリがインストールされていることを確認してください")
+        print("💡 仮想環境を使用している場合は、source venv/bin/activate を実行してください")
+        sys.exit(1)
     except KeyboardInterrupt:
         print("\n👋 アプリケーションを終了します...")
     except Exception as e:

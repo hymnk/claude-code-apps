@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗾 高品質日本地図ブラウザ（Matplotlib版）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .map-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .map-image {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .feature-card {
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-card h3 {
+            color: #4c51bf;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .feature-card p {
+            line-height: 1.6;
+            color: #4a5568;
+        }
+
+        .controls {
+            text-align: center;
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            margin: 5px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: white;
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .map-container {
+                padding: 15px;
+            }
+        }
+
+        /* ローディングアニメーション */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗾 高品質日本地図ブラウザ</h1>
+            <p>Matplotlib/Python による JavaScript不使用のクリーンな地図表示</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number">47</span>
+                <span class="stat-label">都道府県</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">9</span>
+                <span class="stat-label">地域区分</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">100%</span>
+                <span class="stat-label">Python</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">0%</span>
+                <span class="stat-label">JavaScript</span>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>美しい地図を生成中...</p>
+            </div>
+            <img src="/map.png" alt="日本地図" class="map-image" id="mapImage" 
+                 onload="hideLoading()" onerror="showError()">
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3>🎨 美しいビジュアル</h3>
+                <p>Matplotlibの高品質レンダリングにより、美しいグラデーションと配色で各地域を表現。印刷品質の高解像度画像を生成します。</p>
+            </div>
+            <div class="feature-card">
+                <h3>🚫 JavaScript不使用</h3>
+                <p>完全にサーバーサイド（Python）で地図を生成。フロントエンドにJavaScriptを一切使用しない、クリーンでセキュアな実装です。</p>
+            </div>
+            <div class="feature-card">
+                <h3>🗾 47都道府県完全対応</h3>
+                <p>北海道から沖縄まで、全47都道府県を9つの地域に分類して色分け表示。地域ごとの特色を視覚的に理解できます。</p>
+            </div>
+            <div class="feature-card">
+                <h3>⚡ 高速生成</h3>
+                <p>Pythonの数値計算ライブラリを活用した効率的な描画処理。リアルタイムでの地図生成とブラウザ表示が可能です。</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn refresh-btn" onclick="refreshMap()">🔄 地図を再生成</button>
+            <a href="/api/prefectures" class="btn" target="_blank">📊 都道府県データAPI</a>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 高品質日本地図ブラウザ | Powered by Python + Matplotlib</p>
+            <p>JavaScript不使用のクリーンな実装</p>
+        </div>
+    </div>
+
+    <script>
+        // 最小限のJavaScriptのみ（地図再生成機能）
+        function refreshMap() {
+            const loading = document.getElementById('loading');
+            const mapImage = document.getElementById('mapImage');
+            
+            loading.style.display = 'block';
+            mapImage.style.display = 'none';
+            
+            // キャッシュバスターを追加して再生成
+            const timestamp = new Date().getTime();
+            mapImage.src = `/map.png?t=${timestamp}`;
+        }
+
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            const mapImage = document.getElementById('mapImage');
+            
+            loading.style.display = 'none';
+            mapImage.style.display = 'block';
+        }
+
+        function showError() {
+            const loading = document.getElementById('loading');
+            loading.innerHTML = '<p style="color: #e53e3e;">地図の生成に失敗しました。ページを再読み込みしてください。</p>';
+        }
+
+        // 初期読み込み時のローディング
+        document.addEventListener('DOMContentLoaded', function() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
