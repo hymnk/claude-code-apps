@@ -5,3 +5,5 @@ pytest-flask==1.2.0
 folium==0.14.0
 geopandas==0.14.0
 requests==2.31.0
+matplotlib==3.8.2
+numpy==1.24.3
