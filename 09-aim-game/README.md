@@ -38,14 +38,28 @@ FPSゲームのAIM能力向上のためのトレーニングゲームです。
 
 ### 必要環境
 - Python 3.7以上
-- pygame
+- pygame (デスクトップ版)
+- Flask + Socket.IO (ブラウザ版)
 
 ### セットアップ
 ```bash
 # 依存関係をインストール
 pip install -r requirements.txt
+```
 
-# ゲーム実行
+### ゲーム実行
+
+#### ブラウザ版 (推奨)
+```bash
+# Flask + Socket.IO版を起動
+python flask_app.py
+
+# ブラウザで http://localhost:5000 にアクセス
+```
+
+#### デスクトップ版
+```bash
+# Pygame版を起動
 python aim_trainer.py
 ```
 
