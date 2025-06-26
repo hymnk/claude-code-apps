@@ -210,108 +210,71 @@ def main():
         # ゲームエリア
         st.markdown("### 🎯 ターゲットをクリック！")
         
-        # インタラクティブゲームエリア（HTML5 Canvas使用）
-        game_area_html = f"""
+        # 診断用の簡単なCanvasテスト
+        st.markdown(f"""
         <div style="display: flex; justify-content: center; margin: 20px 0;">
-            <div style="position: relative;">
-                <canvas id="gameCanvas" width="700" height="500" 
-                        style="background-color: #2d5016; border: 3px solid #4a7c1a; 
-                               border-radius: 15px; cursor: crosshair; display: block;">
-                </canvas>
-            </div>
+            <canvas id="gameCanvas" width="700" height="500" 
+                    style="background-color: #2d5016; border: 3px solid #4a7c1a; 
+                           border-radius: 15px; cursor: crosshair; display: block;">
+                Canvas not supported
+            </canvas>
+        </div>
+        
+        <div id="debug-info" style="background: black; color: white; padding: 10px; margin: 10px;">
+            Debug Info: Loading...
         </div>
         
         <script>
-        (function() {{
+        function debugCanvas() {{
+            const debug = document.getElementById('debug-info');
             const canvas = document.getElementById('gameCanvas');
-            if (!canvas) return;
             
-            const ctx = canvas.getContext('2d');
-            const targetX = {st.session_state.target_x};
-            const targetY = {st.session_state.target_y};
-            const targetRadius = 30;
+            let info = 'Canvas Debug:\\n';
+            info += `Canvas element: ${{canvas ? 'Found' : 'Not found'}}\\n`;
             
-            // キャンバスをクリア
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // ターゲットを描画
-            function drawTarget() {{
-                // 外側の黒い輪
-                ctx.beginPath();
-                ctx.arc(targetX, targetY, targetRadius, 0, 2 * Math.PI);
-                ctx.fillStyle = '#000000';
-                ctx.fill();
+            if (canvas) {{
+                info += `Canvas size: ${{canvas.width}}x${{canvas.height}}\\n`;
+                const ctx = canvas.getContext('2d');
+                info += `Canvas context: ${{ctx ? 'Found' : 'Not found'}}\\n`;
                 
-                // 赤い輪
-                ctx.beginPath();
-                ctx.arc(targetX, targetY, targetRadius * 0.8, 0, 2 * Math.PI);
-                ctx.fillStyle = '#FF0000';
-                ctx.fill();
-                
-                // 金色の輪
-                ctx.beginPath();
-                ctx.arc(targetX, targetY, targetRadius * 0.6, 0, 2 * Math.PI);
-                ctx.fillStyle = '#FFD700';
-                ctx.fill();
-                
-                // 赤い中心
-                ctx.beginPath();
-                ctx.arc(targetX, targetY, targetRadius * 0.4, 0, 2 * Math.PI);
-                ctx.fillStyle = '#FF0000';
-                ctx.fill();
-                
-                // 金色の中心
-                ctx.beginPath();
-                ctx.arc(targetX, targetY, targetRadius * 0.2, 0, 2 * Math.PI);
-                ctx.fillStyle = '#FFD700';
-                ctx.fill();
+                if (ctx) {{
+                    // 簡単なテスト描画
+                    ctx.fillStyle = '#FF0000';
+                    ctx.fillRect(50, 50, 100, 100);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = '20px Arial';
+                    ctx.fillText('TEST', 60, 110);
+                    
+                    // ターゲット描画テスト
+                    const targetX = {st.session_state.target_x};
+                    const targetY = {st.session_state.target_y};
+                    
+                    ctx.beginPath();
+                    ctx.arc(targetX, targetY, 30, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#00FF00';
+                    ctx.fill();
+                    
+                    info += `Target drawn at (${{targetX}}, ${{targetY}})\\n`;
+                    info += 'Test rectangle and circle drawn\\n';
+                }}
             }}
             
-            drawTarget();
+            if (debug) {{
+                debug.innerHTML = info.replace(/\\n/g, '<br>');
+            }}
             
-            // クリックイベントハンドラー
-            canvas.addEventListener('click', function(event) {{
-                const rect = canvas.getBoundingClientRect();
-                const clickX = event.clientX - rect.left;
-                const clickY = event.clientY - rect.top;
-                
-                // ターゲットとの距離を計算
-                const distance = Math.sqrt(
-                    Math.pow(clickX - targetX, 2) + Math.pow(clickY - targetY, 2)
-                );
-                
-                // Streamlitに結果を送信するため、隠しボタンをクリック
-                if (distance <= targetRadius) {{
-                    // ヒット
-                    const hitBtn = document.querySelector('[data-testid*="target_hit_btn"]');
-                    if (hitBtn) {{
-                        hitBtn.click();
-                    }}
-                }} else {{
-                    // ミス
-                    const missBtn = document.querySelector('[data-testid*="target_miss_btn"]');
-                    if (missBtn) {{
-                        missBtn.click();
-                    }}
-                }}
-            }});
-        }})();
+            console.log(info);
+        }}
+        
+        // すぐに実行
+        debugCanvas();
+        
+        // 複数回試行
+        setTimeout(debugCanvas, 100);
+        setTimeout(debugCanvas, 500);
+        setTimeout(debugCanvas, 1000);
         </script>
-        """
-        
-        st.markdown(game_area_html, unsafe_allow_html=True)
-        
-        # 隠しボタン（JavaScriptからトリガーされる）
-        with st.container():
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("", key="target_hit_btn"):
-                    handle_target_click()
-                    st.rerun()
-            with col2:
-                if st.button("", key="target_miss_btn"):
-                    handle_miss_click()
-                    st.rerun()
+        """, unsafe_allow_html=True)
         
         # タイマー更新（自動リロードを削除）
         if remaining_time <= 0:
