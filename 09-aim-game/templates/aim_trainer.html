@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 FPS AIM Trainer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Arial', sans-serif;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .game-container {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .game-canvas {
+            background-color: #2d5016;
+            border: 3px solid #4a7c1a;
+            border-radius: 15px;
+            cursor: default;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #cccccc;
+        }
+
+        .control-panel {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+        }
+
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-result {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .rating {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .timer {
+            font-size: 1.8em;
+            color: #ffff00;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .instructions {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .hit-effect, .miss-effect {
+            position: absolute;
+            font-weight: bold;
+            font-size: 20px;
+            pointer-events: none;
+            z-index: 100;
+            animation: fadeOut 1s ease-out forwards;
+        }
+
+        .hit-effect {
+            color: #00ff00;
+        }
+
+        .miss-effect {
+            color: #ff0000;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-30px); }
+        }
+
+        .crosshair {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 FPS AIM Trainer</h1>
+        <p>30秒間でできるだけ多くの的を正確に撃て！</p>
+    </div>
+
+    <div class="game-container">
+        <div class="timer" id="timer">30.0s</div>
+        
+        <div class="stats-panel">
+            <div class="stat-item">
+                <div class="stat-value" id="score">0</div>
+                <div class="stat-label">スコア</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="hits">0/0</div>
+                <div class="stat-label">ヒット数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="accuracy">0.0%</div>
+                <div class="stat-label">命中率</div>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas" class="game-canvas" width="700" height="500"></canvas>
+        
+        <div class="control-panel">
+            <button id="startBtn" class="btn">🎯 ゲーム開始</button>
+            <button id="restartBtn" class="btn" style="display: none;">🔄 もう一度</button>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h3>📖 ゲーム説明</h3>
+        <p>• 緑のエリア内に現れる赤いターゲットをクリック</p>
+        <p>• 中心に近いほど高得点（白い中心100点、外側20点までグラデーション）</p>
+        <p>• 30秒間でできるだけ高いスコアを目指そう</p>
+        <p>• 距離に応じた滑らかな得点システム</p>
+    </div>
+
+    <div id="gameResult" class="game-result">
+        <h2>🏆 ゲーム終了！</h2>
+        <div id="finalStats"></div>
+        <div class="rating" id="rating"></div>
+    </div>
+
+    <div class="crosshair" id="crosshair"></div>
+
+    <script>
+        // Socket.IO接続
+        const socket = io();
+        
+        // DOM要素
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const timer = document.getElementById('timer');
+        const scoreEl = document.getElementById('score');
+        const hitsEl = document.getElementById('hits');
+        const accuracyEl = document.getElementById('accuracy');
+        const gameResult = document.getElementById('gameResult');
+        const finalStats = document.getElementById('finalStats');
+        const rating = document.getElementById('rating');
+        const crosshair = document.getElementById('crosshair');
+
+        // ゲーム状態
+        let gameActive = false;
+        let currentTarget = { x: 0, y: 0 };
+        let statusUpdateInterval;
+
+        // Socket.IOイベントリスナー
+        socket.on('connected', (data) => {
+            console.log('Connected to server:', data.message);
+        });
+
+        socket.on('game_started', (data) => {
+            gameActive = true;
+            currentTarget.x = data.target_x;
+            currentTarget.y = data.target_y;
+            
+            startBtn.style.display = 'none';
+            restartBtn.style.display = 'none';
+            gameResult.style.display = 'none';
+            
+            drawTarget();
+            startStatusUpdates();
+            
+            console.log('Game started! Target at:', currentTarget);
+        });
+
+        socket.on('target_hit', (data) => {
+            showHitEffect(data.click_x, data.click_y, data.hit_score);
+            currentTarget.x = data.new_target_x;
+            currentTarget.y = data.new_target_y;
+            updateStats(data);
+            drawTarget();
+        });
+
+        socket.on('target_miss', (data) => {
+            showMissEffect(data.click_x, data.click_y);
+            currentTarget.x = data.new_target_x;
+            currentTarget.y = data.new_target_y;
+            updateStats(data);
+            drawTarget();
+        });
+
+        socket.on('game_ended', (data) => {
+            gameActive = false;
+            stopStatusUpdates();
+            showGameResult(data);
+            
+            startBtn.style.display = 'none';
+            restartBtn.style.display = 'inline-block';
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        socket.on('game_status', (data) => {
+            if (data.game_active) {
+                timer.textContent = `${data.remaining_time}s`;
+                updateStats(data);
+            }
+        });
+
+        // ゲーム描画関数
+        function drawTarget() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const x = currentTarget.x;
+            const y = currentTarget.y;
+            const r = 30;
+            
+            // 外側の黒い輪
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, 2 * Math.PI);
+            ctx.fillStyle = '#000000';
+            ctx.fill();
+            
+            // 赤い輪
+            ctx.beginPath();
+            ctx.arc(x, y, r * 0.8, 0, 2 * Math.PI);
+            ctx.fillStyle = '#FF0000';
+            ctx.fill();
+            
+            // 白い輪
+            ctx.beginPath();
+            ctx.arc(x, y, r * 0.6, 0, 2 * Math.PI);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+            
+            // 赤い中心
+            ctx.beginPath();
+            ctx.arc(x, y, r * 0.4, 0, 2 * Math.PI);
+            ctx.fillStyle = '#FF0000';
+            ctx.fill();
+            
+            // 白い中心点
+            ctx.beginPath();
+            ctx.arc(x, y, r * 0.15, 0, 2 * Math.PI);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+        }
+
+        // 統計更新
+        function updateStats(data) {
+            scoreEl.textContent = data.total_score || data.score || 0;
+            hitsEl.textContent = `${data.hits}/${data.total_clicks}`;
+            accuracyEl.textContent = `${data.accuracy || 0}%`;
+        }
+
+        // エフェクト表示
+        function showHitEffect(x, y, score) {
+            const effect = document.createElement('div');
+            effect.className = 'hit-effect';
+            effect.textContent = `+${score}`;
+            effect.style.left = `${x + canvas.offsetLeft}px`;
+            effect.style.top = `${y + canvas.offsetTop}px`;
+            document.body.appendChild(effect);
+            
+            setTimeout(() => effect.remove(), 1000);
+        }
+
+        function showMissEffect(x, y) {
+            const effect = document.createElement('div');
+            effect.className = 'miss-effect';
+            effect.textContent = 'MISS';
+            effect.style.left = `${x + canvas.offsetLeft}px`;
+            effect.style.top = `${y + canvas.offsetTop}px`;
+            document.body.appendChild(effect);
+            
+            setTimeout(() => effect.remove(), 1000);
+        }
+
+        // ゲーム結果表示
+        function showGameResult(data) {
+            finalStats.innerHTML = `
+                <p><strong>最終スコア:</strong> ${data.final_score}</p>
+                <p><strong>ヒット数:</strong> ${data.hits}/${data.total_clicks}</p>
+                <p><strong>命中率:</strong> ${data.accuracy}%</p>
+                <p><strong>平均スコア:</strong> ${data.avg_score}</p>
+                <p><strong>秒間ヒット数:</strong> ${data.hits_per_second}</p>
+            `;
+            
+            rating.textContent = data.rating;
+            rating.style.color = data.rating_color;
+            
+            gameResult.style.display = 'block';
+        }
+
+        // 状態更新
+        function startStatusUpdates() {
+            statusUpdateInterval = setInterval(() => {
+                if (gameActive) {
+                    socket.emit('get_game_status');
+                }
+            }, 100);
+        }
+
+        function stopStatusUpdates() {
+            if (statusUpdateInterval) {
+                clearInterval(statusUpdateInterval);
+            }
+        }
+
+        // イベントリスナー
+        startBtn.addEventListener('click', () => {
+            socket.emit('start_game');
+        });
+
+        restartBtn.addEventListener('click', () => {
+            socket.emit('start_game');
+        });
+
+        canvas.addEventListener('click', (event) => {
+            if (!gameActive) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const clickX = event.clientX - rect.left;
+            const clickY = event.clientY - rect.top;
+            
+            socket.emit('target_click', {
+                click_x: clickX,
+                click_y: clickY
+            });
+        });
+
+        // クロスヘア機能は無効化
+
+        // 初期化
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('ゲーム開始ボタンを押してください', canvas.width/2, canvas.height/2);
+    </script>
+</body>
+</html>
