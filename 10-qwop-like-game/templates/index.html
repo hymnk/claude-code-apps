@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QWOP-like Running Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>100m Running Game</h1>
+            <div class="stats">
+                <span>Distance: <span id="distance">0.0</span>m</span>
+                <span>Time: <span id="time">0.0</span>s</span>
+                <span>Speed: <span id="speed">0.0</span>m/s</span>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        
+        <div class="controls">
+            <div class="control-info">
+                <p>Controls:</p>
+                <div class="key-instructions">
+                    <span class="key">Q</span> - Left Thigh
+                    <span class="key">W</span> - Right Thigh  
+                    <span class="key">O</span> - Left Calf
+                    <span class="key">P</span> - Right Calf
+                </div>
+            </div>
+            <button id="resetBtn">Reset Game</button>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>
