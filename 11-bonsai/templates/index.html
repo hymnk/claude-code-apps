@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen Bonsai Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">禅盆栽</h1>
+            <p class="subtitle">Zen Bonsai Generator</p>
+        </header>
+        
+        <div class="bonsai-display">
+            <canvas id="bonsaiCanvas" width="800" height="600"></canvas>
+            <div class="bonsai-frame"></div>
+        </div>
+        
+        <div class="controls">
+            <button id="generateBtn" class="btn-generate">新しい盆栽を生成</button>
+            <div class="info">
+                <p>ページを更新するたびに、新しい盆栽が生まれます</p>
+                <div class="seed-info">Seed: <span id="seedValue">{{ seed }}</span></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        window.bonsaiSeed = {{ seed }};
+    </script>
+    <script src="{{ url_for('static', filename='js/bonsai.js') }}"></script>
+</body>
+</html>
