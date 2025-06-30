@@ -1,0 +1,114 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background-color: #000;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.game-container {
+    text-align: center;
+    border: 2px solid #fff;
+    padding: 20px;
+    background-color: #111;
+}
+
+.header {
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 2em;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+#gameCanvas {
+    border: 2px solid #fff;
+    background-color: #222;
+    display: block;
+    margin: 0 auto 20px;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.control-info {
+    text-align: left;
+}
+
+.control-info p {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.key-instructions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+    font-size: 0.9em;
+}
+
+.key {
+    background-color: #333;
+    border: 1px solid #555;
+    padding: 3px 8px;
+    margin-right: 5px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+#resetBtn {
+    background-color: #333;
+    color: #fff;
+    border: 2px solid #555;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1em;
+    transition: all 0.3s;
+}
+
+#resetBtn:hover {
+    background-color: #555;
+    border-color: #777;
+}
+
+@media (max-width: 600px) {
+    .stats {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .controls {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    #gameCanvas {
+        width: 100%;
+        max-width: 400px;
+        height: 200px;
+    }
+}
