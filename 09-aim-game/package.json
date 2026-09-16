@@ -1,0 +1,15 @@
+{
+  "name": "aim-forge",
+  "version": "1.0.0",
+  "description": "AIM Forge - a mouse-aim precision trainer",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "jest": "^30.0.0",
+    "jest-environment-jsdom": "^30.0.0"
+  }
+}

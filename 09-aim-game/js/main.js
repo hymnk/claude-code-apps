@@ -753,7 +753,33 @@ class Game {
   }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  const canvas = document.getElementById('game');
-  window.__game = new Game(canvas);
-});
+if (typeof window !== 'undefined' && typeof window.document !== 'undefined') {
+  window.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('game');
+    if (canvas) {
+      window.__game = new Game(canvas);
+    }
+  });
+}
+
+// Exposed for unit testing (Node/Jest); harmless no-op in the browser.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    WIDTH,
+    HEIGHT,
+    HUD_HEIGHT,
+    ROUND_MS,
+    HIGH_SCORE_KEY,
+    COLORS,
+    clamp,
+    lerp,
+    dist,
+    easeOutBack,
+    easeOutCubic,
+    Target,
+    Particle,
+    FloatingText,
+    Button,
+    Game,
+  };
+}
